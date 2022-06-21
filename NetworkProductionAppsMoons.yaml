@@ -1,0 +1,165 @@
+Description: Network for production nginx node apps
+Parameters:
+  VpcCidr: 
+    Default: 10.100.0.0/16
+    Description: "Vpc cidr block"
+    Type: String
+  VpcName: 
+    Default: WOW
+    Description: "Vpc name"
+    Type: String
+  SubnetsCidr:
+    Default: 10.100.0.0/24, 10.100.1.0/24, 10.100.2.0/24
+    Description: "Cidr for subnets"
+    Type: CommaDelimitedList
+  SubnetsNames:
+    Default: Kalimdor, Northrend, Pandaria,
+    Description: "Names for subnets"
+    Type: CommaDelimitedList
+Outputs:
+  IGWID:
+    Description: Internet gateway id
+    Export:
+      Name: !Sub "${AWS::StackName}-IGW-ID"
+    Value: !Ref 'IGW'
+  VPCID:
+    Description: VPC id
+    Export:
+      Name: !Sub "${AWS::StackName}-VPC-ID"
+    Value: !Ref 'Vpc'
+  PublicSubnetOneId:
+    Description: Public subnet one id
+    Export:
+      Name: !Sub "${AWS::StackName}-SUBNET-PUBLIC-ONE-ID"
+    Value: !Ref 'SubnetPublicOne'
+  PublicSubnetTwoId:
+    Description: Public subnet two id
+    Export:
+      Name: !Sub "${AWS::StackName}-SUBNET-PUBLIC-TWO-ID"
+    Value: !Ref 'SubnetPublicTwo'
+  PublicSubnetThreeId:
+    Description: Public subnet one id
+    Export:
+      Name: !Sub "${AWS::StackName}-SUBNET-PUBLIC-THREE-ID"
+    Value: !Ref 'SubnetPublicOne'
+  VPCCIDR:
+    Description: VPC cidr bock
+    Export:
+      Name: !Sub "${AWS::StackName}-VPC-CIDR"
+    Value: !GetAtt 'Vpc.CidrBlock'
+Resources:
+  IGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${VpcName}-igw"
+        - Key: Environment
+          Value: production
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref 'Vpc'
+      InternetGatewayId: !Ref IGW
+  Vpc:
+    Properties:
+      CidrBlock: !Ref 'VpcCidr'
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Ref 'VpcName'
+        - Key: Environment 
+          Value: production
+    Type: AWS::EC2::VPC
+  SubnetPublicOne:
+    DependsOn: 'Vpc'
+    Properties:
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs
+          Ref: AWS::Region
+      CidrBlock: !Select
+        - 0
+        - !Ref 'SubnetsCidr'
+      Tags:
+        - Key: Name
+          Value: !Select
+            - 0
+            - !Ref 'SubnetsNames'
+        - Key: Environment
+          Value: production
+      VpcId: !Ref 'Vpc'
+    Type: AWS::EC2::Subnet
+  SubnetPublicTwo:
+    DependsOn: 'Vpc'
+    Properties:
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs
+          Ref: AWS::Region
+      CidrBlock: !Select
+        - 1
+        - !Ref 'SubnetsCidr'
+      Tags:
+        - Key: Name
+          Value: !Select
+            - 1
+            - !Ref 'SubnetsNames'
+        - Key: Environment
+          Value: production
+      VpcId: !Ref 'Vpc'
+    Type: AWS::EC2::Subnet
+  SubnetPublicThree:
+    DependsOn: 'Vpc'
+    Properties:
+      AvailabilityZone: !Select
+        - 2
+        - !GetAZs
+          Ref: AWS::Region
+      CidrBlock: !Select
+        - 2
+        - !Ref 'SubnetsCidr'
+      Tags:
+        - Key: Name
+          Value: !Select
+            - 2
+            - !Ref 'SubnetsNames'
+        - Key: Environment
+          Value: production
+      VpcId: !Ref 'Vpc'
+    Type: AWS::EC2::Subnet
+  PublicRouteTable:
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${VpcName}-public"
+        - Key: Environment
+          Value: production
+      VpcId: !Ref 'Vpc'
+    Type: AWS::EC2::RouteTable
+  PublicRoute:
+    DependsOn: 'IGW'
+    Properties:
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref 'IGW'
+      RouteTableId: !Ref 'PublicRouteTable'
+    Type: AWS::EC2::Route
+  PublicRouteAssocOne:
+    DependsOn: PublicRouteTable
+    Properties:
+      RouteTableId: !Ref 'PublicRouteTable'
+      SubnetId: !Ref 'SubnetPublicOne'
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  PublicRouteAssocTwo:
+    DependsOn: PublicRouteTable
+    Properties:
+      RouteTableId: !Ref 'PublicRouteTable'
+      SubnetId: !Ref 'SubnetPublicTwo'
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  PublicRouteAssocThree:
+    DependsOn: PublicRouteTable
+    Properties:
+      RouteTableId: !Ref 'PublicRouteTable'
+      SubnetId: !Ref 'SubnetPublicThree'
+    Type: AWS::EC2::SubnetRouteTableAssociation

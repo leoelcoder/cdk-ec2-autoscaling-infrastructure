@@ -1,0 +1,37 @@
+{
+  "vpc-provider:account=092520804297:filter.vpc-id=vpc-06fb8b61edb15d13f:region=us-east-2:returnAsymmetricSubnets=true": {
+    "vpcId": "vpc-06fb8b61edb15d13f",
+    "vpcCidrBlock": "10.100.0.0/16",
+    "availabilityZones": [],
+    "subnetGroups": [
+      {
+        "name": "Public",
+        "type": "Public",
+        "subnets": [
+          {
+            "subnetId": "subnet-013cb363437d65f90",
+            "cidr": "10.100.0.0/24",
+            "availabilityZone": "us-east-2a",
+            "routeTableId": "rtb-0480f04b3aef1674d"
+          },
+          {
+            "subnetId": "subnet-08c4362a44a746caf",
+            "cidr": "10.100.1.0/24",
+            "availabilityZone": "us-east-2b",
+            "routeTableId": "rtb-0480f04b3aef1674d"
+          },
+          {
+            "subnetId": "subnet-044226061ea9f2321",
+            "cidr": "10.100.2.0/24",
+            "availabilityZone": "us-east-2c",
+            "routeTableId": "rtb-0480f04b3aef1674d"
+          }
+        ]
+      }
+    ]
+  },
+  "hosted-zone:account=092520804297:domainName=task-management-challenge.click:region=us-east-2": {
+    "Id": "/hostedzone/Z025170223OBRJ89ULWAS",
+    "Name": "task-management-challenge.click."
+  }
+}
